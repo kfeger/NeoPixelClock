@@ -40,6 +40,21 @@ void SetPixel (int Position, uint32_t Farbe) {
   strip.setPixelColor(Position, NewColor);
 }
 
+void ResetSecPixel (int Position, uint32_t Farbe) {
+  uint32_t OldColor, NewColor;
+  OldColor = strip.getPixelColor(Position);
+  NewColor = OldColor;
+  strip.setPixelColor(Position, NewColor);
+  //strip.setPixelColor(Position, 0);
+}
+
+void SetSecPixel (int Position, uint32_t Farbe) {
+  uint32_t OldColor, NewColor;
+  OldColor = strip.getPixelColor(Position);
+  NewColor = Farbe;
+  strip.setPixelColor(Position, NewColor);
+}
+
 void disp(int val) {
   Serial.print(val);
   Serial.print("...");
@@ -60,22 +75,6 @@ void SetHands(void) {
   int ShowHour;
 
   uint32_t OldColor = 0, NewColor = 0;
-
-  // Sekunden
-  OnPos = GetPixelAddress(NowSecond);
-  if (NowSecond == 0)
-    OffPos = GetPixelAddress(59);
-  else
-    OffPos = GetPixelAddress(NowSecond - 1);
-  ResetPixel(OffPos, SEC_OFF);
-  if (SonneDa) {
-    ResetPixel(OffPos, SEC_OFF);
-    SetPixel(OnPos, SEC_C);
-  }
-  else {
-    ResetPixel(OffPos, SEC_OFF);
-    SetPixel(OnPos, DARK_SEC_C);
-  }
 
   // Minuten
   OnPos = GetPixelAddress(NowMinute);
@@ -231,18 +230,50 @@ void SetHands(void) {
     SetPixel(OnPosH, DARK_HOUR_CL);
     SetPixel(OnPosHH, DARK_HOUR_CLL);
   }
+
   SetMarker(0);
+  
+  // Sekunden
+  OnPos = GetPixelAddress(NowSecond);
+  if (NowSecond == 0)
+    OffPos = GetPixelAddress(59);
+  else
+    OffPos = GetPixelAddress(NowSecond - 1);
+  ResetSecPixel(OffPos, SEC_OFF);
+  if (SonneDa) {
+    ResetSecPixel(OffPos, SEC_OFF);
+    SetSecPixel(OnPos, SEC_C);
+  }
+  else {
+    ResetSecPixel(OffPos, SEC_OFF);
+    SetSecPixel(OnPos, DARK_SEC_C);
+  }
+
   strip.show();
   interrupts();
 }
 
 void SetMarker (byte slow) {
   int i;
+  long Marker, DMarker;
+  if ((NextSync - now()) > 600) {  //0...2999 seit NTP-sync
+    Marker = MARK_C;
+    DMarker = DARK_MARK_C;
+  }
+  else if (((NextSync - now()) <= 600) && ((NextSync - now()) > 300)) { //3000...3299 seit NTP-sync
+    Marker = MARK0_C;
+    DMarker = DARK_MARK0_C;
+  }
+  else {  //> 3300 seit NTP-sync
+    Marker = MARK1_C;
+    DMarker = DARK_MARK1_C;    
+  }
+      
   for (i = 0; i < 60; i += 5) {
     if (SonneDa)
-      SetPixel(GetPixelAddress(i), MARK_C);
+      SetPixel(GetPixelAddress(i), Marker);
     else
-      SetPixel(GetPixelAddress(i), DARK_MARK_C);
+      SetPixel(GetPixelAddress(i), DMarker);
     if (slow) {
       strip.show();
       delay (84);

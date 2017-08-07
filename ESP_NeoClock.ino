@@ -1,7 +1,25 @@
+/* Siehe
+ * https://github.com/kfeger/NeoPixelClock
+ * 
+ * Eine Uhr mit 60 Neopixel auf Basis ESP-01
+ * Beinhaltet WiFiManager zur Konfiguration des lokalen WLAN.
+ * 
+ * Da kein Pin für die Anwendung eines einfachen LDR verfügbar ist,
+ * wird Sonnenauf- und -untergang für die Helligkeitssteuerung
+ * verwendet (TimeLord.h). Nachdem die Neopixel über Pin 3 (Rx) gesteuert werden,
+ * sind Pins 0 und 2 wieder verfügbar. Es könnten weitere Interfaces
+ * über I2C angebunden werden (hier nicht umgesetzt).
+ * Sommer-/Winterzeit wird über TimeLib.h berechnet, die Zeit selbst liefert
+ * NTP (de.pool.ntp.org)
+ * 
+ * Für mehr Pins kann ESP-12 verwendet werden. dazu
+ * "#define ESP-12 1" unkommentieren.
+ * */
+
 #include <TimeLib.h>  //https://github.com/PaulStoffregen/Time
 #include <Timezone.h> //https://github.com/JChristensen/Timezone
 #include <TimeLord.h> //https://github.com/probonopd/TimeLord
-#include <ESP8266WiFi.h>
+#include <ESP8266WiFi.h>  //https://github.com/esp8266/Arduino
 #include <WiFiUdp.h>
 #include <Adafruit_NeoPixel.h>  //https://github.com/adafruit/Adafruit_NeoPixel
 //needed for WiFi-Manager library
@@ -36,8 +54,12 @@
 
 //Stundenmarker hell
 #define MARK_C      0x101010
+#define MARK0_C     0x202000
+#define MARK1_C     0x300000
 //Stundenmarker dunkel
-#define DARK_MARK_C 0x020202
+#define DARK_MARK_C   0x020202
+#define DARK_MARK0_C  0x030300
+#define DARK_MARK1_C  0x040000
 
 #define HOUR_OFF 0x00ffff
 #define MIN_OFF  0xff00ff
