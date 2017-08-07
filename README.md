@@ -13,3 +13,6 @@ NTP (de.pool.ntp.org)
  
 Für mehr Pins kann ESP-12 verwendet werden. dazu
 "#define ESP-12 1" unkommentieren.
+
+17-08-07:
+Der Status der Synchronisation wird jetzt durch die Farbe der 5-Minuten-Marker angezeigt.
