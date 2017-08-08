@@ -16,3 +16,6 @@ Für mehr Pins kann ESP-12 verwendet werden. dazu
 
 17-08-07:
 Der Status der Synchronisation wird jetzt durch die Farbe der 5-Minuten-Marker angezeigt.
+
+17-08-08:
+Der Kontrast zwischen Markern und Zeigern vor einem NTP-Sync wurde verbessert.
