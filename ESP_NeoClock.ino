@@ -55,11 +55,11 @@
 //Stundenmarker hell
 #define MARK_C      0x101010
 #define MARK0_C     0x202000
-#define MARK1_C     0x300000
+#define MARK1_C     0x002020
 //Stundenmarker dunkel
 #define DARK_MARK_C   0x020202
 #define DARK_MARK0_C  0x030300
-#define DARK_MARK1_C  0x040000
+#define DARK_MARK1_C  0x000303
 
 #define HOUR_OFF 0x00ffff
 #define MIN_OFF  0xff00ff
