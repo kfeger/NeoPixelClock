@@ -1,13 +1,4 @@
 
-//Wird gerufen,wenn das bisherige WLAN
-//nicht mehr vorhanden ist
-void configModeCallback (WiFiManager *ThisWiFiManager) {
-  Serial.println("Entered config mode");
-  Serial.println(WiFi.softAPIP());
-  //Serial.println(WiFi.softAP(ssid));
-  //if you used auto generated SSID, print it
-  Serial.println(ThisWiFiManager->getConfigPortalSSID());
-}
 
 void ClearStrip(void) {
   for (int i = 0; i < 60; i++) {
@@ -16,14 +7,36 @@ void ClearStrip(void) {
   strip.show();
 }
 
-int GetPixelAddress (int Number) {
-  if ((Number >= 0) && (Number < 8))   // Nummer größer 0 und kleiner 8
-    return (7 - Number);
-  else if (Number && (Number < 60)) // Nummer größer 0 und kleiner 60
-    return (67 - Number);
-  else    // Fehler, Nummer ausserhalb des Berichs 0...59
-    return (0);
-}
+/*
+   Gibt die LED-Position zurück
+   Sekunde 0 == LED 52, cw
+*/
+#if defined CW_RING
+  #pragma message "Schmaler Ring, 0 bei 52, cw"
+  int GetPixelAddress (int Number) {
+    if ((Number >= 0) && (Number < 8))   // Nummer größer/gleich 0 und kleiner 8
+      return (52 + Number);
+    else if (Number && (Number < 60)) // Nummer größer/gleich 8 und kleiner 60
+      return (Number - 8);
+    else    // Fehler, Nummer ausserhalb des Berichs 0...59
+      return (0);
+  }
+#else
+  /*
+     Gibt die LED-Position zurück
+     Sekunde 0 = LED 52, ccw
+  */
+  #pragma message "Breiter Ring, 0 bei 8, ccw"
+  int GetPixelAddress (int Number) {
+    if ((Number >= 0) && (Number < 8))   // Nummer größer/gleich 0 und kleiner 8
+      return (7 - Number);
+    else if (Number && (Number < 60)) // Nummer größer/gleich 8 und kleiner 60
+      return (67 - Number);
+    else    // Fehler, Nummer ausserhalb des Berichs 0...59
+      return (0);
+  }
+#endif
+
 
 void ResetPixel (int Position, uint32_t Farbe) {
   uint32_t OldColor, NewColor;
@@ -63,7 +76,10 @@ void disp(int val) {
 void SetHands(void) {
   // Laufzeit mit Int-Aus ca. 2ms
   noInterrupts();
-  Serial.println(SonneDa);
+  if (SonneDa)
+    Serial.println("Hell");
+  else
+    Serial.println("Dunkel");
   ClearStrip();
   int OnPos = 0;
   int OnPosH = 0, OnPosL = 0;
@@ -232,11 +248,12 @@ void SetHands(void) {
   }
 
   SetMarker(0);
-  
+
   // Sekunden
   OnPos = GetPixelAddress(NowSecond);
-  if (NowSecond == 0)
+  if (NowSecond == 0) {
     OffPos = GetPixelAddress(59);
+  }
   else
     OffPos = GetPixelAddress(NowSecond - 1);
   ResetSecPixel(OffPos, SEC_OFF);
@@ -251,24 +268,38 @@ void SetHands(void) {
 
   strip.show();
   interrupts();
+  if ((NowSecond == 0) || NewSync) {
+    drawTime();
+    NewSync = false;
+  }
 }
 
 void SetMarker (byte slow) {
   int i;
   long Marker, DMarker;
-  if ((NextSync - now()) > 600) {  //0...2999 seit NTP-sync
-    Marker = MARK_C;
-    DMarker = DARK_MARK_C;
+  if (((NextSync - now()) > 600)) {  //0...2999 seit NTP-sync
+    Marker = MARK_C_0;
+    DMarker = DARK_MARK_C_0;
   }
-  else if (((NextSync - now()) <= 600) && ((NextSync - now()) > 300)) { //3000...3299 seit NTP-sync
+  else if (((NextSync - now()) <= 600) && ((NextSync - now()) > 270)) { //3000...3299 seit NTP-sync, gelblich
     Marker = MARK0_C;
     DMarker = DARK_MARK0_C;
   }
-  else {  //> 3300 seit NTP-sync
+  else if (((NextSync - now()) <= 270) && ((NextSync - now()) > 30)) { //3300...3499 seit NTP-sync, lila-lich
     Marker = MARK1_C;
-    DMarker = DARK_MARK1_C;    
+    DMarker = DARK_MARK1_C;
   }
-      
+  else {  //> 3500 seit NTP-sync, lila-lich/weiß blinken
+    if (now() & 1) {
+      Marker = MARK1_C;
+      DMarker = DARK_MARK1_C;
+    }
+    else {
+      Marker = MARK_C_0;
+      DMarker = DARK_MARK_C_0;
+    }
+  }
+
   for (i = 0; i < 60; i += 5) {
     if (SonneDa)
       SetPixel(GetPixelAddress(i), Marker);
@@ -288,7 +319,7 @@ void SetMarkerColor (void) {
     SetPixel(GetPixelAddress(i), j);
     strip.show();
     j <<= 1;
-    if(!(j & 0xffffff))
+    if (!(j & 0xffffff))
       j = 1;
     delay (50);
   }

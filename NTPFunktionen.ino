@@ -1,3 +1,14 @@
+//Wird gerufen,wenn das bisherige WLAN
+//nicht mehr vorhanden ist
+void configModeCallback (WiFiManager *ThisWiFiManager) {
+  Serial.println("Entered config mode");
+  Serial.println(WiFi.softAPIP());
+  //Serial.println(WiFi.softAP(ssid));
+  //if you used auto generated SSID, print it
+  Serial.println(ThisWiFiManager->getConfigPortalSSID());
+}
+
+
 /*-------- NTP code ----------*/
 /*
 
@@ -136,8 +147,13 @@ long int getNTPTime() {
   Serial.println("No NTP Response : -(");
 #endif
   /*digitalWrite(0, HIGH);
-  digitalWrite(2, HIGH);  //Dann klappts auch mit nem Restart...
-  ESP.restart();  //Keine ntp-Zeit, reset*/
+    digitalWrite(2, HIGH);  //Dann klappts auch mit nem Restart...
+    ESP.restart();  //Keine ntp-Zeit, reset*/
   return 0; // return 0 if unable to get the time
+}
+
+void PrintSync (long SyncTime) {
+  Serial.print("Naechster Sync um ");
+  Serial.print(hour(SyncTime)); Serial.print(":"); Serial.print(minute(SyncTime)); Serial.print(":"); Serial.println(second(SyncTime));
 }
 
