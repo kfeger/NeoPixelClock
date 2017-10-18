@@ -19,3 +19,7 @@ Der Status der Synchronisation wird jetzt durch die Farbe der 5-Minuten-Marker a
 
 17-08-08:
 Der Kontrast zwischen Markern und Zeigern vor einem NTP-Sync wurde verbessert.
+
+17-10-18:
+OLED als optionale Anzeige integriert (Zeit, Ort, Next Sync...). Gesteuert über
+Precompiler.
